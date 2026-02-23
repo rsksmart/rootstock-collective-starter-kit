@@ -127,8 +127,8 @@ The layout will look like this:
 ### 1. Clone and install
 
 ```shell
-git clone https://github.com/rsksmart/rsk-wagmi-starter-kit.git
-cd rsk-wagmi-starter-kit
+git clone https://github.com/rsksmart/collective-starter-kit.git
+cd collective-starter-kit
 npm install
 ```
 
@@ -231,23 +231,17 @@ Every write (approve, stake, withdraw, vote) is simulated first so the user does
 - **Addresses:** **`src/constants/contracts.ts`** exports `COLLECTIVE_CONTRACT_ADDRESSES` keyed by chain ID `31`, with: `governor`, `treasury`, `backersManager`, `builderRegistry`, `RIF`, `stRIF`, `USDRIF`. Passed to `createCollective({ chainId: 31, rpcUrl, contractAddresses })` when using the real SDK.
 - **SDK interface and types:** **`src/lib/collectiveStub.ts`** defines the `CollectiveSDK` interface (proposals/staking methods), `ProposalSummary`, `ProposalsListResult`, `StakingInfo`, `TokenAmount`, and `VoteSupport` (enum 0/1/2). These match the Collective SDK surface the guide should document.
 
-### Replacing the stub with the real SDK
-
-When **`@rsksmart/collective-sdk`** is published: install it (and peers `@rsksmart/w3layer`, `@rsksmart/sdk-base`), then in **`src/hooks/useCollective.ts`** replace `createCollectiveStub()` with `createCollective({ chainId: 31, rpcUrl, contractAddresses: COLLECTIVE_CONTRACT_ADDRESSES[31] })`. No change to component code; they already call the same `sdk.proposals.*` and `sdk.staking.*` methods.
-
 ---
 
-## Fit for the guide *Implementing On-Chain Voting with Collective SDK*
+## Collective SDK NPM package (TODO)
 
-This starter kit is a suitable reference for the guide. It provides: `stakeRIF()` and unstake (StakingCard, with approve, simulation, error handling); voting (ProposalList, VoteButton, with simulation and Insufficient VP handling); and contract-address overrides for Testnet (`constants/contracts.ts`). The guide can add Contract Registry usage, proposal creation (`createProposal`, `createTreasuryTransferProposal`), and shared-treasury flows on top.
-
-**For the Lead Technical Writer:** See the section **SDK methods and code references (for the guide)** above for a table of every SDK method used, the file and component where each is called, simulation flow, user flow to SDK mapping, contract-override shape, and how to swap the stub for the real SDK. Use it to draft the guide with accurate method names and code locations.
+**TODO:** The Collective SDK is not yet published on npm. This kit currently uses a stub (`src/lib/collectiveStub.ts`) so the UI builds and runs without the real package.
 
 ---
 
 ## References
 
-- **Collective SDK**: [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). Source for contract overrides, CollectiveSDK, proposals/staking/vote APIs. Once published on npm, use `@rsksmart/collective-sdk` as the reference.  
+- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). Source for contract overrides, CollectiveSDK, proposals/staking/vote APIs. NPM package: see **Collective SDK NPM package (TODO)** above.  
 - **Base kit**: [rsksmart/rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit). Wagmi, RainbowKit, Rootstock chains.  
 - **Rootstock**: [Rootstock](https://rootstock.io/) · [Developers Portal](https://dev.rootstock.io/).
 
