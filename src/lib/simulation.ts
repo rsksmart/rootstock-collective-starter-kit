@@ -1,8 +1,5 @@
 /**
- * Simulation before write (Phase 5).
- * Run eth_call / simulateContract for stake, withdraw, and vote before sending the real TX.
- * If simulation fails, the UI shows an error and does not send the transaction.
- * All simulateContract calls are wrapped in try/catch to provide meaningful user feedback.
+ * Simulate stake, withdraw, and vote before sending. All simulateContract calls are wrapped in try/catch.
  */
 
 import type { PublicClient, Address } from "viem";
@@ -15,7 +12,7 @@ export interface CollectiveAddresses {
   governor: Address;
 }
 
-/** User-facing message when simulation fails (e.g. insufficient balance, contract revert). */
+/** Format simulation failure for display. */
 function simulationErrorMessage(context: string, cause: unknown): string {
   const msg = cause instanceof Error ? cause.message : String(cause);
   if (/insufficient|balance|allowance/i.test(msg)) {
@@ -27,9 +24,7 @@ function simulationErrorMessage(context: string, cause: unknown): string {
   return `Simulation failed: ${msg}. ${context}`;
 }
 
-/**
- * Simulate ERC20 approve(spender, amount). Used before approveRIF write.
- */
+/** Simulate RIF approve before approveRIF. */
 export async function simulateApproveRIF(
   publicClient: PublicClient,
   account: Address,
@@ -49,9 +44,7 @@ export async function simulateApproveRIF(
   }
 }
 
-/**
- * Simulate stRIF depositAndDelegate(delegatee, amount). Used before stakeRIF write.
- */
+/** Simulate stake before stakeRIF. */
 export async function simulateStakeRIF(
   publicClient: PublicClient,
   account: Address,
@@ -72,9 +65,7 @@ export async function simulateStakeRIF(
   }
 }
 
-/**
- * Simulate stRIF withdrawTo(recipient, amount). Used before unstakeRIF write.
- */
+/** Simulate withdraw before unstakeRIF. */
 export async function simulateUnstakeRIF(
   publicClient: PublicClient,
   account: Address,
@@ -106,9 +97,7 @@ function parseUint256(id: string | bigint): bigint {
   return BigInt(s);
 }
 
-/**
- * Simulate governor castVote(proposalId, support). Used before castVote write.
- */
+/** Simulate vote before castVote. */
 export async function simulateCastVote(
   publicClient: PublicClient,
   account: Address,

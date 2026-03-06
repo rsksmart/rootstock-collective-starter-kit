@@ -1,10 +1,5 @@
 /**
- * StakingCard: stake and withdraw RIF using collective-sdk staking (approveRIF, stakeRIF, unstakeRIF).
- * Rootstock Editor Mode: background #000000, text #FAF9F5, active borders #FF9100.
- * Simulation before write and Insufficient VP handling via lib/errors.
- *
- * RIF and stRIF balances are read on-chain (Rootstock Testnet) so they show real values
- * even when using the stub SDK.
+ * Stake/withdraw RIF via collective-sdk. Balances from chain; simulation and VP errors via lib/errors.
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -45,9 +40,7 @@ function parseStakingAmount(input: string): bigint | null {
   return value > 0n ? value : null;
 }
 
-/** Max decimal places to show for token balances (avoids long floats like 249.99999999999999995). */
 const BALANCE_DISPLAY_DECIMALS = 6;
-/** Label for very small non-zero balances so users don't see "0" after staking. */
 const SMALL_BALANCE_LABEL = "< 0.000001";
 
 function formatTokenBalance(raw: bigint | undefined, decimals: bigint = DECIMALS): string {
@@ -58,12 +51,10 @@ function formatTokenBalance(raw: bigint | undefined, decimals: bigint = DECIMALS
   const frac = raw % divisor;
   const fracStr = frac.toString().padStart(Number(decimals), "0").replace(/0+$/, "") || "0";
   const full = fracStr === "0" ? whole.toString() : `${whole}.${fracStr}`;
-  // Avoid long decimal tails; cap to display decimals
   if (full.includes(".")) {
     const [a, b] = full.split(".");
     const trimmed = b.slice(0, BALANCE_DISPLAY_DECIMALS).replace(/0+$/, "") || "0";
     const display = trimmed === "0" ? a : `${a}.${trimmed}`;
-    // If non-zero raw rounds to "0" at this precision, show a hint so user knows balance exists
     if (display === "0") return SMALL_BALANCE_LABEL;
     return display;
   }
@@ -77,7 +68,6 @@ interface StakingCardProps {
   sdk: CollectiveSDK;
   walletClient: WalletClient | null;
   address: Address;
-  /** When false, the app is using the stub; staking/voting will not send real transactions. */
   isRealSdk?: boolean;
 }
 
@@ -89,7 +79,6 @@ export default function StakingCard({
 }: StakingCardProps): JSX.Element {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState<"stake" | "withdraw" | null>(null);
-  /** Stake flow steps for timeline; null = idle. */
   const [stakeFlowStep, setStakeFlowStep] = useState<
     "approving" | "staking" | "confirming" | "success" | null
   >(null);
@@ -272,7 +261,7 @@ export default function StakingCard({
       </CardHeader>
       {!isRealSdk && (
         <div className="mx-6 mb-2 p-3 rounded-lg border border-amber-500/60 bg-amber-950/30 text-amber-200 text-sm">
-          Staking and voting are disabled because the Collective SDK is not installed. To enable them, install the SDK from GitHub Packages: set <code className="bg-black/30 px-1 rounded">GITHUB_TOKEN</code> (with <code className="bg-black/30 px-1 rounded">read:packages</code>), then run <code className="bg-black/30 px-1 rounded">npm install</code>. See the README for details.
+          Collective SDK not installed. Set <code className="bg-black/30 px-1 rounded">GITHUB_TOKEN</code> (read:packages), run <code className="bg-black/30 px-1 rounded">npm install</code>. See README.
         </div>
       )}
       <CardContent className="flex flex-col gap-4">

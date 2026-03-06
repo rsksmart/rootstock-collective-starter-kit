@@ -15,9 +15,7 @@ const projectId =
     : "";
 
 if (projectId === "" && typeof window !== "undefined") {
-  console.warn(
-    "[RainbowKit] VITE_WC_PROJECT_ID is missing or empty. Wallet connection (e.g. WalletConnect) will not work. Add it to .env — see README."
-  );
+  console.warn("[RainbowKit] VITE_WC_PROJECT_ID missing. Add to .env (see README).");
 }
 
 const rpcUrl = getRootstockTestnetRpcUrl();

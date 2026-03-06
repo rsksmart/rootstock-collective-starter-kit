@@ -1,12 +1,5 @@
 /**
- * useCollective: core SDK initialization for the Collective DAO Starter Kit.
- *
- * Architecture (3-layer):
- *   W3Layer (transport) -> Base (shared logic/errors) -> Module (Collective: proposals, staking)
- *
- * When @rsksmart/collective-sdk is installed (e.g. from GitHub Packages with GITHUB_TOKEN),
- * the real SDK is used with chainId 31, rpcUrl, and contractAddresses from constants/contracts.ts.
- * Otherwise the stub in src/lib/collectiveStub.ts is used so the app still runs (sample proposals, no real chain calls).
+ * Initializes Collective SDK (real from GitHub Packages if installed, else stub). Uses chainId 31 and constants/contracts.ts.
  */
 
 import { useMemo, useState, useEffect } from "react";
@@ -20,7 +13,7 @@ import {
 } from "@/constants/contracts";
 import { getRootstockTestnetRpcUrl } from "@/lib/utils/RootstockTestnet";
 
-/** Chain ID for Rootstock Testnet — used to gate Collective flows. */
+/** Rootstock Testnet chain ID. */
 export const COLLECTIVE_CHAIN_ID = ROOTSTOCK_TESTNET_CHAIN_ID;
 
 /** Result when SDK is not ready (wrong chain or no wallet). */
@@ -39,7 +32,6 @@ export interface UseCollectiveReady {
   walletClient: WalletClient | null;
   address: `0x${string}`;
   error: null;
-  /** True when the real @rsksmart/collective-sdk is used; false when the stub is used (no stake/vote on-chain). */
   isRealSdk: boolean;
 }
 
@@ -51,10 +43,7 @@ type RealSDKConstructor = new (config: {
   contractAddresses?: Record<string, `0x${string}`>;
 }) => CollectiveSDK;
 
-/**
- * Hook: returns Collective SDK (real when installed from GitHub Packages, else stub) with wallet client and address.
- * Use sdk.proposals (getProposals, castVote), sdk.staking (getStakingInfo, approveRIF, stakeRIF, unstakeRIF).
- */
+/** Returns Collective SDK (real or stub), wallet client, and address. */
 export function useCollective(): UseCollectiveResult {
   const { address, chain } = useAccount();
   const { data: walletClient } = useWalletClient();

@@ -1,23 +1,6 @@
 /**
- * Collective SDK contract-addresses-override pattern.
- * Single source of Collective contract addresses for Rootstock Testnet (Chain ID: 31).
- *
- * Token addresses follow the official Rootstock Contract Addresses table
- * (RIF, stRIF, USDRIF; see Rootstock docs).
- *
- * When the Collective SDK NPM package is used, pass this to target the correct contracts:
- *
- *   createCollective({
- *     chainId: 31,
- *     rpcUrl,
- *     contractAddresses: COLLECTIVE_CONTRACT_ADDRESSES[ROOTSTOCK_TESTNET_CHAIN_ID],
- *   })
- *
- * The SDK also has built-in testnet addresses; use this file to override or to keep
- * one place for your deployment addresses.
- *
- * Addresses are normalized with getAddress() so they match EIP-55 checksum format
- * required by viem (avoids "Address must match its checksum counterpart" in simulation).
+ * Collective contract addresses for Rootstock Testnet (31). Pass to createCollective() as contractAddresses.
+ * Addresses are EIP-55 checksummed for viem.
  */
 
 import { getAddress } from "viem";
@@ -39,12 +22,7 @@ export type CollectiveContractAddressMap = {
   USDRIF: `0x${string}`;
 };
 
-/**
- * Collective contract addresses for Rootstock Testnet (Chain ID: 31).
- * Shape matches SDK ContractAddresses (Collective + token addresses).
- * Replace any placeholder (0x0...) with your deployment if different.
- * Type is narrowed to the known chain ID so unsupported chains are caught at build time.
- */
+/** Collective + token addresses for Testnet. Replace 0x0... placeholders if your deployment differs. */
 export const COLLECTIVE_CONTRACT_ADDRESSES: Record<
   typeof ROOTSTOCK_TESTNET_CHAIN_ID,
   CollectiveContractAddressMap

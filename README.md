@@ -12,14 +12,14 @@ A sample dApp built on the [Rootstock Collective SDK](https://github.com/rsksmar
 ## Purpose of this kit
 
 - **Sample dApp**: A minimal, runnable app that shows usage of the Collective SDK (proposals, staking, voting) in a React + Wagmi + RainbowKit stack.
-- **Guide companion**: The guide *Implementing On-Chain Voting with Collective SDK* uses this kit as its codebase. The README includes a dedicated **SDK methods and code references (for the guide)** section so the Lead Technical Writer can map each SDK method to the exact file and component (e.g. `stakeRIF` in StakingCard, `castVote` in VoteButton, simulation in `lib/simulation.ts`).
+- **Guide companion**: The guide *Implementing On-Chain Voting with Collective SDK* uses this kit. The **SDK methods and code references** section maps methods to files (e.g. `stakeRIF` in StakingCard, `castVote` in VoteButton, simulation in `lib/simulation.ts`).
 - **Scope:** This kit covers participation only (stake, list proposals, vote). It does not implement claim rewards, vault deposit/withdraw, proposal creation, or a Contract Registry; those can be added in the guide or in a fork.
 
 ---
 
 ## What’s in this kit
 
-- **Wallet connection**: Wagmi + RainbowKit (from the base [rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit)). The kit still uses RainbowKit for the connect flow (wallet list, WalletConnect, etc.); only the *account* popup (after connecting) is custom so small tRBTC balances display correctly.
+- **Wallet connection**: Wagmi + RainbowKit (from [rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit)). Custom account modal for small tRBTC display.
 - **Collective SDK surface**: One hook (`useCollective`) exposing **proposals** (getProposals, castVote), **staking** (getStakingInfo, approveRIF, stakeRIF, unstakeRIF).
 - **DAO UI**: Connect wallet → Stake/withdraw RIF → List active proposals → Vote (with simulation before every write).
 - **Contract overrides**: Single source of Collective contract addresses for Testnet in `constants/contracts.ts` (governor, treasury, RIF, stRIF, etc.).
@@ -30,7 +30,7 @@ A sample dApp built on the [Rootstock Collective SDK](https://github.com/rsksmar
 
 ## Three-layer SDK architecture
 
-The Rootstock Collective SDK is built in three layers. Understanding this helps when wiring the kit and when writing the portal guide.
+The Rootstock Collective SDK has three layers.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -100,7 +100,7 @@ The layout will look like this:
 │   │   │   └── VoteButton.tsx
 │   │   └── ui/                   # Shadcn etc.
 │   ├── lib
-│   │   ├── collectiveStub.ts    # Stub when SDK not installed (see Setup → GitHub Packages)
+│   │   ├── collectiveStub.ts    # Fallback when SDK unavailable
 │   │   └── utils
 │   │       └── RootstockTestnet.ts
 │   └── pages
@@ -132,36 +132,13 @@ cd collective-starter-kit
 npm install
 ```
 
-
-#### Connecting the Collective SDK (GitHub Packages)
-
-You can connect the starter kit to the Collective SDK from GitHub Packages using a personal access token (e.g. for QA or development).
-
-1. **Create a GitHub Personal Access Token** with the `read:packages` scope:  
-   GitHub → Settings → Developer settings → [Personal access tokens](https://github.com/settings/tokens) → Generate new token (classic) → enable `read:packages`.
-
-2. **Configure npm to use the token** (either set the env var before install, or add it to your shell profile):
-   ```shell
-   export GITHUB_TOKEN=ghp_yourTokenHere
-   ```
-   The repo’s `.npmrc` already points the `@rsksmart` scope to GitHub Packages and uses `GITHUB_TOKEN` for auth.
-
-3. **Install dependencies** (the optional dependency `@rsksmart/collective-sdk` will be installed when the token is set):
-   ```shell
-   npm install
-   ```
-
-4. **Run the app** as usual (`npm run dev`). When the SDK is installed, `useCollective` uses the SDK with Testnet (chain ID 31), the RPC URL from your env, and contract addresses from `constants/contracts.ts`. Stake, proposals, and voting then hit Rootstock Testnet contracts.
-
-Without a token, `npm install` still succeeds; the optional SDK dependency may be skipped and the app runs with the stub and sample proposals.
-
 ### 2. Environment
 
 Copy `.env.example` to `.env` and set the variables below.
 
 #### Get your WalletConnect (Reown) project ID (required)
 
-You need a project ID so the app can use WalletConnect (e.g. mobile wallets, WalletConnect-compatible browsers).
+Required for WalletConnect (e.g. mobile wallets).
 
 1. Go to the [Reown (WalletConnect) Cloud](https://cloud.reown.com) and sign in (or create an account).
 2. Open **Projects** and click **Create** (or use an existing project).
@@ -184,17 +161,7 @@ With an API key, the app uses the [Rootstock RPC API](https://dev.rootstock.io/d
    ```
    Leave this empty or omit it to use the public node. See [Getting Started with the Rootstock RPC API](https://dev.rootstock.io/developers/rpc-api/rootstock/setup) for more.
 
-#### Arka paymaster API key (optional, Etherspot demo)
-
-The Account Abstraction / Etherspot demo uses the Arka paymaster. To use your own key, set in `.env`:
-
-```shell
-VITE_ARKA_PUBLIC_KEY='your-arka-key'
-```
-
-Leave empty to use the demo fallback. Only needed if you run the Etherspot demo; the Collective DAO flows do not use it.
-
-No other keys are required for the Collective DAO flows.
+Only these two variables are used. No other keys are required for the Collective DAO flows.
 
 **How the starter kit uses the Collective SDK for writes**  
 The Collective SDK’s write methods (`stakeRIF`, `unstakeRIF`, `castVote`, etc.) take a **WalletClient** (from viem) so the SDK can request a signature. In this starter kit we use the SDK correctly as a **browser dApp**: the WalletClient comes from the **user’s connected wallet** (Wagmi + RainbowKit). The user approves each transaction in their wallet; the app never has access to a private key. No `PRIVATE_KEY` is required in `.env`; only `VITE_WC_PROJECT_ID` for WalletConnect.
@@ -225,7 +192,7 @@ Open the app and connect a wallet on **Rootstock Testnet (Chain ID: 31)**. The C
 
 ## Implemented in this kit
 
-This sample dApp focuses on **participation** (stake RIF, list proposals, cast vote) and uses the Collective SDK as intended for a browser dApp. The table below shows what this kit implements versus what the [Collective SDK](https://github.com/rsksmart/collective-sdk) (GitHub Packages) supports.
+This sample dApp focuses on **participation** (stake RIF, list proposals, cast vote) and uses the Collective SDK as intended for a browser dApp. The table below shows what this kit implements versus what the [Collective SDK](https://github.com/rsksmart/collective-sdk) supports.
 
 | Capability | Starter kit (this repo) | Collective SDK |
 |------------|-------------------------|----------------|
@@ -245,7 +212,7 @@ The starter kit has **staking, listing proposals, and voting** (read + write) wi
 
 ## SDK methods and code references (for the guide)
 
-This section gives the Lead Technical Writer explicit method names, file locations, and flow so the guide *Implementing On-Chain Voting with Collective SDK* can reference the kit accurately.
+Method names and file locations for the guide.
 
 ### Explaining voting when the kit doesn’t create proposals
 
@@ -278,7 +245,7 @@ All write methods take a **WalletClient** (from Wagmi `useWalletClient()`). The 
 
 ### Simulation before write
 
-Every write (approve, stake, withdraw, vote) is simulated first so the user does not submit a transaction that would revert. Simulation helpers live in **`src/lib/simulation.ts`** and use Viem `publicClient.simulateContract` with minimal ABIs from **`src/lib/collectiveAbis.ts`**. All `simulateContract` calls are wrapped in try/catch; failures (e.g. insufficient balance, contract revert) throw with a user-facing message so the UI can show actionable feedback.
+Every write is simulated first. Helpers in **`src/lib/simulation.ts`** use Viem `simulateContract` and **`src/lib/collectiveAbis.ts`**. Failures throw with a clear message for the UI.
 
 | Simulation function | Used before | Contract / function simulated |
 |---------------------|-------------|------------------------------|
@@ -301,15 +268,15 @@ Every write (approve, stake, withdraw, vote) is simulated first so the user does
 
 ---
 
-## Collective SDK (GitHub Packages)
+## Collective SDK
 
-The Collective SDK is published on **GitHub Packages** (scope `@rsksmart/collective-sdk`). This kit lists it as an **optional dependency**: with a GitHub personal access token (`read:packages`) and the repo’s `.npmrc`, `npm install` will install the SDK and the app will use it (proposals, staking, voting on Testnet). Without the token, the optional dependency is skipped and the kit uses a **stub** (`src/lib/collectiveStub.ts`) so the UI still builds and runs; the stub’s `getProposals()` returns two sample proposals for demo. See **Setup → Connecting the Collective SDK (GitHub Packages)** above.
+This kit depends on **`@rsksmart/collective-sdk`** for proposals, staking, and voting on Rootstock Testnet. Install with `npm install`.
 
 ---
 
 ## References
 
-- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). Source for contract overrides, CollectiveSDK, proposals/staking/vote APIs. Install from GitHub Packages; see **Collective SDK (GitHub Packages)** above.  
+- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). Contract overrides, CollectiveSDK, proposals/staking/vote APIs.  
 - **Base kit**: [rsksmart/rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit). Wagmi, RainbowKit, Rootstock chains.  
 - **Rootstock**: [Rootstock](https://rootstock.io/) · [Developers Portal](https://dev.rootstock.io/).
 

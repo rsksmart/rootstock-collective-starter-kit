@@ -1,8 +1,4 @@
-/**
- * Type declaration for optional dependency @rsksmart/collective-sdk (GitHub Packages).
- * When the package is not installed, this allows the build to succeed; useCollective falls back to the stub.
- * Defines constructor and public API (proposals, staking) for IDE autocompletion.
- */
+/** Types for @rsksmart/collective-sdk when package is not installed. Build uses stub. */
 import type { WalletClient } from "viem";
 import type { Address } from "viem";
 
