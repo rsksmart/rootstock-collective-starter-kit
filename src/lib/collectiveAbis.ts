@@ -1,8 +1,4 @@
-/**
- * Minimal ABIs for Collective SDK simulation (Phase 5).
- * Used by lib/simulation.ts to simulate stake, withdraw, and vote before sending TX.
- * Minimal ABIs for simulation; matches Collective Governor/stRIF contract interfaces.
- */
+/** Minimal ABIs for simulation (stake, withdraw, vote). */
 
 /** stRIF: depositAndDelegate(to, value) and withdrawTo(account, value) */
 export const stRIFSimulationAbi = [

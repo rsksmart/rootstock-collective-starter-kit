@@ -1,15 +1,9 @@
-/**
- * Format native balance for display in the account modal.
- * Ensures small balances (e.g. < 0.01) show meaningful decimals instead of "0".
- */
+/** Format native balance for account modal; small values get more decimals. */
 
 const MIN_DECIMALS_SMALL = 6;
 const MAX_DECIMALS = 4;
 
-/**
- * Format a balance for modal display. For small values (< 0.01) shows at least
- * MIN_DECIMALS_SMALL decimals so "0.000499..." is visible instead of "0".
- */
+/** Balance string for modal. */
 export function formatNativeBalanceDisplay(
   formatted: string | undefined,
   symbol: string

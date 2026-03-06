@@ -17,7 +17,7 @@ const CARD_BORDER = "border-[#FF9100]/50";
 interface ProposalListProps {
   sdk: CollectiveSDK;
   walletClient: WalletClient | null;
-  address: Address; // passed from Dao for future use (e.g. hasVoted)
+  address: Address;
 }
 
 export default function ProposalList({

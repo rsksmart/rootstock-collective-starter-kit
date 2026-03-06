@@ -2,7 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import Footer from "@/components/Footer";
-import { Dao, Etherspot, Home, Wagmi } from "@/pages";
+import { Dao, Home } from "@/pages";
 
 function App() {
   return (
@@ -12,8 +12,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Dao />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/legacy/wagmi" element={<Wagmi />} />
-          <Route path="/legacy/aa" element={<Etherspot />} />
         </Routes>
         <Footer />
         <Toaster />

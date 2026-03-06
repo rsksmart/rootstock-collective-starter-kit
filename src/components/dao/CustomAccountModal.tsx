@@ -1,8 +1,4 @@
-/**
- * Custom account modal so we can display small tRBTC balances correctly
- * (RainbowKit's modal rounds small values to "0").
- * Rendered via portal into document.body so it is never clipped by parent overflow/transform.
- */
+/** Account modal with correct small tRBTC display. Rendered via portal. */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";

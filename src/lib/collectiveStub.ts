@@ -1,14 +1,12 @@
 /**
- * Stub for the Collective SDK when @rsksmart/collective-sdk is not installed (e.g. optional dep from GitHub Packages skipped).
- * Read calls return empty/zero or sample data; write calls (stake, vote) throw with an explanatory message.
- * When the package is installed (GITHUB_TOKEN + npm install), useCollective uses the real SDK and this stub is not used.
+ * Stub when @rsksmart/collective-sdk is not installed. Read calls return sample data; write calls throw.
  */
 
 import type { WalletClient } from "viem";
 import type { Address } from "viem";
 
 const SDK_NOT_INSTALLED =
-  "The Collective SDK is not installed. To stake and vote on-chain, install it from GitHub Packages (see README: set GITHUB_TOKEN with read:packages, then npm install).";
+  "Collective SDK not installed. Install from GitHub Packages: GITHUB_TOKEN with read:packages, then npm install. See README.";
 
 export interface TokenAmount {
   raw: bigint;
@@ -69,7 +67,7 @@ function zeroAmount(symbol: string): TokenAmount {
   return { raw: 0n, formatted: "0", decimals: 18, symbol };
 }
 
-/** Build sample proposals with deadlines relative to current time (so they don't appear expired). */
+/** Sample proposals with deadlines relative to now. */
 function getSampleProposals(): ProposalSummary[] {
   const now = Math.floor(Date.now() / 1000);
   return [

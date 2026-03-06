@@ -24,16 +24,4 @@ const starters: StarterProps[] = [
       "Rootstock Collective DAO Starter Kit. Connect wallet, stake RIF, view active proposals, and vote on Rootstock Testnet using the Collective SDK.",
     link: "/",
   },
-  {
-    name: "Legacy: Contract Interaction with Wagmi",
-    description:
-      "Get started with contract interaction using the Wagmi library. Pre-configured Wagmi setup, sample contract interactions, and more.",
-    link: "/legacy/wagmi",
-  },
-  {
-    name: "Legacy: Account Abstraction with Etherspot",
-    description:
-      "Account Abstraction Starter Kit. Foundation for building applications with account abstraction.",
-    link: "/legacy/aa",
-  },
 ];
