@@ -14,7 +14,6 @@ A sample dApp built on the [Rootstock Collective SDK](https://github.com/rsksmar
 - **Sample dApp**: A minimal, runnable app that shows usage of the Collective SDK (proposals, staking, voting) in a React + Wagmi + RainbowKit stack.
 - **Guide companion**: The guide *Implementing On-Chain Voting with Collective SDK* uses this kit. The **SDK methods and code references** section maps methods to files (e.g. `stakeRIF` in StakingCard, `castVote` in VoteButton, simulation in `lib/simulation.ts`).
 - **Scope:** This kit covers participation only (stake, list proposals, vote). It does not implement claim rewards, vault deposit/withdraw, proposal creation, or a Contract Registry; those can be added in the guide or in a fork.
-
 ---
 
 ## What’s in this kit
@@ -72,7 +71,7 @@ Wallet (RainbowKit) → Wagmi → Viem client → Web3CoreLayer → CollectiveSD
 
 ---
 
-## Project structure (target)
+## Project structure
 
 The layout will look like this:
 
