@@ -94,7 +94,6 @@ export default function StakingCard({
   >(null);
   const [stakeNeededApprove, setStakeNeededApprove] = useState(false);
   const [lastStakeTxHash, setLastStakeTxHash] = useState<string | null>(null);
-  const [lastWithdrawTxHash, setLastWithdrawTxHash] = useState<string | null>(null);
   const { toast } = useToast();
   const publicClient = usePublicClient({ chainId });
 
@@ -222,7 +221,6 @@ export default function StakingCard({
       const result = await sdk.staking.unstakeRIF(walletClient, value, address);
       await result.wait();
       refetchBalances();
-      setLastWithdrawTxHash(result.hash);
       const withdrawExplorerUrl = getExplorerTxUrl(chainId, result.hash);
       toast({
         title: "Withdraw submitted",
