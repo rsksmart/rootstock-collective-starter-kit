@@ -50,7 +50,7 @@ export default function ProposalList({
     return () => {
       cancelled = true;
     };
-  }, [sdk]);
+  }, [sdk, chainId]);
 
   if (loading) {
     return (

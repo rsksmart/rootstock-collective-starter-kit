@@ -14,6 +14,7 @@ export const ROOTSTOCK_CHAIN_IDS: RootstockChainId[] = [
   ROOTSTOCK_TESTNET_CHAIN_ID,
 ];
 
+// Browser fallbacks.
 const PUBLIC_MAINNET_RPC = "https://public-node.rsk.co";
 const PUBLIC_TESTNET_RPC = "https://public-node.testnet.rsk.co";
 const RPC_MAINNET_BASE = "https://rpc.rootstock.io";
@@ -22,6 +23,11 @@ const RPC_TESTNET_BASE = "https://rpc.testnet.rootstock.io";
 function getRpcUrl(chainId: RootstockChainId): string {
   const apiKey = import.meta.env.VITE_ROOTSTOCK_RPC_API_KEY;
   if (typeof apiKey === "string" && apiKey.trim() !== "") {
+    // Browser dApps can hit CORS issues on key-based RPC endpoints.
+    // Keep browser behavior stable by preferring CORS-safe public gateways here.
+    if (typeof window !== "undefined") {
+      return chainId === ROOTSTOCK_MAINNET_CHAIN_ID ? PUBLIC_MAINNET_RPC : PUBLIC_TESTNET_RPC;
+    }
     const base = chainId === ROOTSTOCK_MAINNET_CHAIN_ID ? RPC_MAINNET_BASE : RPC_TESTNET_BASE;
     return `${base}/${apiKey.trim()}`;
   }

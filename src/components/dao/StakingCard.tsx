@@ -20,7 +20,7 @@ import {
   simulateStakeRIF,
   simulateUnstakeRIF,
 } from "@/lib/simulation";
-import { COLLECTIVE_CONTRACT_ADDRESSES } from "@/constants/contracts";
+import { getAppContractAddresses } from "@/constants/contracts";
 import { getExplorerTxUrl, type RootstockChainId } from "@/lib/utils/RootstockChains";
 
 const DECIMALS = 18n;
@@ -98,7 +98,7 @@ export default function StakingCard({
   const publicClient = usePublicClient({ chainId });
 
   const addresses = useMemo(
-    () => COLLECTIVE_CONTRACT_ADDRESSES[chainId],
+    () => getAppContractAddresses(chainId),
     [chainId]
   );
 
@@ -147,7 +147,7 @@ export default function StakingCard({
   );
 
   const handleStake = useCallback(async () => {
-    if (!walletClient || !addresses || !publicClient) return;
+    if (!walletClient || !publicClient) return;
     const value = parseRifToWei(amount);
     if (value === null) {
       toast({
@@ -165,12 +165,16 @@ export default function StakingCard({
       setStakeFlowStep(needsApprove ? "approving" : "staking");
 
       if (needsApprove) {
-        await simulateApproveRIF(publicClient, address, addresses, value);
+        if (addresses) {
+          await simulateApproveRIF(publicClient, address, addresses, value);
+        }
         const approveTx = await sdk.staking.approveRIF(walletClient, value);
         await approveTx.wait();
         setStakeFlowStep("staking");
       }
-      await simulateStakeRIF(publicClient, address, addresses, value, address);
+      if (addresses) {
+        await simulateStakeRIF(publicClient, address, addresses, value, address);
+      }
       const result = await sdk.staking.stakeRIF(walletClient, value, address);
       setStakeFlowStep("confirming");
       await result.wait();
@@ -205,7 +209,7 @@ export default function StakingCard({
   }, [sdk, walletClient, address, amount, addresses, publicClient, toast, refetchBalances, chainId]);
 
   const handleWithdraw = useCallback(async () => {
-    if (!walletClient || !addresses || !publicClient) return;
+    if (!walletClient || !publicClient) return;
     const value = parseRifToWei(amount);
     if (value === null) {
       toast({
@@ -217,7 +221,9 @@ export default function StakingCard({
     }
     setLoading("withdraw");
     try {
-      await simulateUnstakeRIF(publicClient, address, addresses, value, address);
+      if (addresses) {
+        await simulateUnstakeRIF(publicClient, address, addresses, value, address);
+      }
       const result = await sdk.staking.unstakeRIF(walletClient, value, address);
       await result.wait();
       refetchBalances();
@@ -301,6 +307,12 @@ export default function StakingCard({
       {!isRealSdk && (
         <div className="mx-6 mb-2 p-3 rounded-lg border border-amber-500/60 bg-amber-950/30 text-amber-200 text-sm">
           Collective SDK not installed. Run <code className="bg-black/30 px-1 rounded">npm install</code>. If the package is from GitHub Packages, set <code className="bg-black/30 px-1 rounded">GITHUB_TOKEN</code> (read:packages) then run <code className="bg-black/30 px-1 rounded">npm install</code>. See README.
+        </div>
+      )}
+      {!addresses && (
+        <div className="mx-6 mb-2 p-3 rounded-lg border border-[#FF9100]/40 bg-[#2b1800]/30 text-[#FAF9F5] text-sm">
+          Using SDK default addresses on this network. Token balance and simulation previews may be
+          limited unless custom app-side addresses are configured.
         </div>
       )}
       <CardContent className="flex flex-col gap-4">
