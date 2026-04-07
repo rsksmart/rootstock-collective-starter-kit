@@ -1,6 +1,7 @@
 /**
- * Collective contract addresses per Rootstock chain (Mainnet 30, Testnet 31).
- * Pass to createCollective() as contractAddresses. Addresses are EIP-55 checksummed for viem.
+ * Collective/token addresses used by app-side reads and simulation.
+ * SDK initialization on default chains (Mainnet 30, Testnet 31) should rely on SDK built-ins.
+ * Addresses here are EIP-55 checksummed for viem.
  */
 
 import { getAddress } from "viem";
@@ -27,7 +28,12 @@ export type CollectiveContractAddressMap = {
   USDRIF: `0x${string}`;
 };
 
-/** Collective + token addresses per chain. Replace Mainnet placeholders with your deployment. */
+const PLACEHOLDER_ADDRESS = "0x0000000000000000000000000000000000000001";
+
+/**
+ * Collective + token addresses per chain for app-side usage.
+ * Replace Mainnet placeholders if you need app-side reads/simulation against custom deployments.
+ */
 export const COLLECTIVE_CONTRACT_ADDRESSES: Record<
   RootstockChainId,
   CollectiveContractAddressMap
@@ -52,6 +58,22 @@ export const COLLECTIVE_CONTRACT_ADDRESSES: Record<
     USDRIF: addr("0x0000000000000000000000000000000000000001"),
   },
 };
+
+function isPlaceholderAddress(value: `0x${string}`): boolean {
+  return value.toLowerCase() === PLACEHOLDER_ADDRESS;
+}
+
+/**
+ * App-side addresses for reads/simulation. Returns null when placeholders are present
+ * so callers can skip app-side simulation/read paths and rely on SDK defaults.
+ */
+export function getAppContractAddresses(
+  chainId: RootstockChainId
+): CollectiveContractAddressMap | null {
+  const map = COLLECTIVE_CONTRACT_ADDRESSES[chainId];
+  const hasPlaceholder = (Object.values(map) as `0x${string}`[]).some(isPlaceholderAddress);
+  return hasPlaceholder ? null : map;
+}
 
 export type CollectiveContractAddressesOverride = Record<
   RootstockChainId,

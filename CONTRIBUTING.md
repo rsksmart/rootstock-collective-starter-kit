@@ -31,17 +31,15 @@ npm run dev
 
 - **Lint**: Run `npm run lint` before committing. The project uses ESLint with TypeScript and React Hooks.
 - **Types**: Keep strict TypeScript; avoid `any` in app code.
-- **Scope**: The starter focuses on Rootstock Testnet (Chain ID 31), Collective DAO flows (connect → stake → proposals → vote), and the stub SDK until the NPM package is published.
+- **Scope**: The starter targets **Rootstock Mainnet (30) and Testnet (31)** and Collective DAO flows (connect → stake → proposals → vote) using **`@rsksmart/collective-sdk`** (Vite aliases to a placeholder only if the package is missing at install time).
 - **Branches**: Prefer a feature branch and a short PR; describe what changed and why.
 
 ## Project layout
 
-- **`src/constants/contracts.ts`**: Collective contract addresses (Testnet).
-- **`src/hooks/useCollective.ts`**: SDK hook (stub); replace with NPM when available.
+- **`src/constants/contracts.ts`**: App-side Collective addresses (Mainnet and Testnet) for reads/simulation.
+- **`src/hooks/useCollective.ts`**: Collective SDK hook (`@rsksmart/collective-sdk`); built-in deployments on 30/31.
 - **`src/components/dao/`**: ConnectWallet, StakingCard, ProposalList, VoteButton.
-- **`src/lib/`**: collectiveStub, errors, simulation, ABIs.
-
-See [README.md](README.md) and [ROADMAP.md](ROADMAP.md) for architecture and roadmap.
+- **`src/lib/`**: Types (`collectiveStub`), errors, simulation, ABIs; `collectiveSdkPlaceholder` when the SDK package is not installed.
 
 ## Reporting issues
 

@@ -8,7 +8,6 @@ import { useAccount, useWalletClient } from "wagmi";
 import type { WalletClient } from "viem";
 import { createCollectiveStub } from "@/lib/collectiveStub";
 import type { CollectiveSDK } from "@/lib/collectiveStub";
-import { COLLECTIVE_CONTRACT_ADDRESSES } from "@/constants/contracts";
 import {
   getRootstockRpcUrl,
   isRootstockChain,
@@ -47,11 +46,71 @@ type RealSDKConstructor = new (config: {
   contractAddresses?: Record<string, `0x${string}`>;
 }) => CollectiveSDK;
 
+// Cache SDK instances by chain to reduce duplicate constructor/init logs in React StrictMode.
+const REAL_SDK_CACHE = new Map<RootstockChainId, CollectiveSDK>();
+const SDK_INIT_LOGGED_CHAINS = new Set<number>();
+let COLLECTIVE_LOG_FILTER_INSTALLED = false;
+
+function installCollectiveLogFilterForDev(): void {
+  if (!import.meta.env.DEV || COLLECTIVE_LOG_FILTER_INSTALLED) return;
+  const originalInfo = console.info.bind(console);
+  console.info = (...args: unknown[]) => {
+    const first = args[0];
+    const second = args[1];
+    const third = args[2] as { chainId?: number } | undefined;
+    const isCollectiveInit =
+      typeof second === "string" &&
+      second.includes("CollectiveSDK initialized") &&
+      typeof first === "string" &&
+      first.includes("[Collective] [INFO]");
+    if (isCollectiveInit) {
+      const chainId = third?.chainId;
+      if (typeof chainId === "number") {
+        if (SDK_INIT_LOGGED_CHAINS.has(chainId)) return;
+        SDK_INIT_LOGGED_CHAINS.add(chainId);
+      }
+    }
+    originalInfo(...args);
+  };
+  COLLECTIVE_LOG_FILTER_INSTALLED = true;
+}
+
+/**
+ * For default Rootstock chains (30/31), rely on SDK built-in addresses.
+ * Only custom deployments/forks should pass contractAddresses.
+ */
+function getSdkContractOverrides(_chainId: RootstockChainId):
+  | Record<string, `0x${string}`>
+  | undefined {
+  return undefined;
+}
+
+function getOrCreateRealSdk(
+  RealSDK: RealSDKConstructor,
+  chainId: RootstockChainId,
+  rpcUrl: string,
+  contractAddresses?: Record<string, `0x${string}`>
+): CollectiveSDK {
+  const cached = REAL_SDK_CACHE.get(chainId);
+  if (cached) return cached;
+  const instance = new RealSDK({ chainId, rpcUrl, contractAddresses }) as CollectiveSDK;
+  REAL_SDK_CACHE.set(chainId, instance);
+  return instance;
+}
+
 /** Returns Collective SDK (real or stub), wallet client, and address. */
 export function useCollective(): UseCollectiveResult {
   const { address, chain } = useAccount();
-  const { data: walletClient } = useWalletClient();
+  const activeChainId =
+    chain?.id !== undefined && isRootstockChain(chain.id) ? chain.id : undefined;
+  const { data: walletClient } = useWalletClient(
+    activeChainId ? { chainId: activeChainId } : undefined
+  );
   const [RealSDK, setRealSDK] = useState<RealSDKConstructor | null>(null);
+
+  useEffect(() => {
+    installCollectiveLogFilterForDev();
+  }, []);
 
   useEffect(() => {
     import("@rsksmart/collective-sdk")
@@ -79,14 +138,10 @@ export function useCollective(): UseCollectiveResult {
     }
 
     const rpcUrl = getRootstockRpcUrl(chainId);
-    const contractAddresses = COLLECTIVE_CONTRACT_ADDRESSES[chainId];
+    const contractAddresses = getSdkContractOverrides(chainId);
 
     const sdk: CollectiveSDK = RealSDK
-      ? (new RealSDK({
-          chainId,
-          rpcUrl,
-          contractAddresses,
-        }) as CollectiveSDK)
+      ? getOrCreateRealSdk(RealSDK, chainId, rpcUrl, contractAddresses)
       : createCollectiveStub();
 
     return {

@@ -18,10 +18,10 @@ A sample dApp built on the [Rootstock Collective SDK](https://github.com/rsksmar
 
 ## What’s in this kit
 
-- **Wallet connection**: Wagmi + RainbowKit (from [rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit)). Custom account modal for small tRBTC display.
+- **Wallet connection**: Wagmi + RainbowKit (from [rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit)). Custom account modal for native balance (RBTC / tRBTC) display.
 - **Collective SDK surface**: One hook (`useCollective`) exposing **proposals** (getProposals, castVote), **staking** (getStakingInfo, approveRIF, stakeRIF, unstakeRIF).
 - **DAO UI**: Connect wallet → Stake/withdraw RIF → List active proposals → Vote (with simulation before every write).
-- **Contract overrides**: Collective contract addresses for Mainnet and Testnet in `constants/contracts.ts` (governor, treasury, RIF, stRIF, etc.). Replace Mainnet placeholders when the Collective is deployed on Mainnet.
+- **Contract addresses**: `constants/contracts.ts` lists governor, treasury, RIF, stRIF, etc., for app-side reads and simulation on Mainnet (30) and Testnet (31). On **default** Rootstock chains the SDK is initialized **without** address overrides—it uses **built-in** Collective deployments; this file still backs UI helpers where placeholders are filled (Testnet complete; replace Mainnet placeholders when you need those previews on Mainnet).
 - **Rootstock Editor Mode** styling: Black background (`#000000`), off-white text (`#FAF9F5`), orange (`#FF9100`) for active states and primary actions.
 - **Security**: Simulate transactions before sending; simulation failures (e.g. insufficient balance, revert) are caught and shown as clear messages. Explicit handling of “Insufficient VP” and other SDK errors in the UI.
 
@@ -39,23 +39,23 @@ The Rootstock Collective SDK has three layers.
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Base layer (@rskSmart/sdk-base)                                 │
+│  Base layer (@rsksmart/sdk-base)                                 │
 │  Shared logic, errors (e.g. Insufficient VP), types              │
 └─────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  W3 / Transport layer (@rskSmart/w3layer)                        │
+│  W3 / Transport layer (@rsksmart/w3layer)                        │
 │  Web3CoreLayer: wraps a chain client (e.g. Viem PublicClient)   │
 └─────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
-                         Viem · Wagmi · Chain (Rootstock Testnet)
+                         Viem · Wagmi · Chain (Rootstock Mainnet or Testnet)
 ```
 
 1. **W3Layer (Transport)**  
    - **Role**: Connects the SDK to the blockchain.  
-   - **In this kit**: With the stub, the flow is conceptual. When using the published NPM package, implemented via **Web3CoreLayer** from `@rskSmart/w3layer`, initialized with a Viem **PublicClient** (and optionally wallet client for writes) for Rootstock Testnet.  
+   - **In this kit**: **Web3CoreLayer** from `@rsksmart/w3layer`, initialized with a Viem **PublicClient** (and, for writes, a **WalletClient** from Wagmi) for whichever chain the wallet uses—**Rootstock Mainnet (30)** or **Testnet (31)**.  
    - **You provide**: RPC URL, chain config, and (for writes) account/signer.
 
 2. **Base (Shared logic)**  
@@ -64,7 +64,7 @@ The Rootstock Collective SDK has three layers.
 
 3. **Module (Collective)**  
    - **Role:** Domain APIs for the Collective DAO (proposals, staking, voting).  
-   - **In this kit**: With the stub, types and usage match the SDK surface. When using the NPM package, **CollectiveSDK** from `@rskSmart/collective-sdk`, created with the core layer and **contract-address overrides** for Testnet. The app uses only the **proposals**, **staking**, and **vote** suites returned by `useCollective`.
+   - **In this kit**: **CollectiveSDK** from `@rsksmart/collective-sdk`, constructed with the core layer. On chains **30** and **31** the hook does **not** pass `contractAddresses` into the SDK constructor so deployments come from the SDK’s **built-in** maps. `constants/contracts.ts` is still used for **app-side** reads and simulation (and optional future overrides); if `@rsksmart/collective-sdk` is missing at install time, Vite aliases the package to `collectiveSdkPlaceholder.ts` until you run `npm install`. The app uses the **proposals**, **staking**, and **vote** suites from `useCollective`.
 
 **Data flow (conceptual)**  
 Wallet (RainbowKit) → Wagmi → Viem client → Web3CoreLayer → CollectiveSDK → `proposals` / `staking` / `vote` → React UI.
@@ -88,7 +88,7 @@ The layout will look like this:
 │   │   ├── rainbowkitConfig.ts
 │   │   └── wagmiProviderConfig.ts
 │   ├── constants
-│   │   └── contracts.ts          # Collective contract-address overrides (Mainnet and Testnet)
+│   │   └── contracts.ts          # App-side Collective addresses (Mainnet and Testnet); SDK uses built-ins on 30/31
 │   ├── hooks
 │   │   └── useCollective.ts      # Web3CoreLayer + CollectiveSDK; returns proposals, staking, vote
 │   ├── components
@@ -99,7 +99,8 @@ The layout will look like this:
 │   │   │   └── VoteButton.tsx
 │   │   └── ui/                   # Shadcn etc.
 │   ├── lib
-│   │   ├── collectiveStub.ts    # Fallback when SDK unavailable
+│   │   ├── collectiveStub.ts    # Types aligned with CollectiveSDK (used across UI)
+│   │   ├── collectiveSdkPlaceholder.ts  # Vite alias if @rsksmart/collective-sdk not installed
 │   │   └── utils
 │   │       └── RootstockChains.ts   # Mainnet (30) and Testnet (31); RPC and chain config
 │   └── pages
@@ -107,8 +108,8 @@ The layout will look like this:
 └── package.json
 ```
 
-- **`constants/contracts.ts`**: Single source of Collective contract addresses for Rootstock Testnet (ID: 31), using the SDK’s **contract-addresses-override** pattern.  
-- **`hooks/useCollective.ts`**: Builds Viem client → Web3CoreLayer → CollectiveSDK; returns `proposals`, `staking`, `vote`.  
+- **`constants/contracts.ts`**: Collective + token addresses per chain for **app-side** reads and simulation (`getAppContractAddresses`). Not passed into the SDK on default chains 30/31 (SDK built-ins).  
+- **`hooks/useCollective.ts`**: Builds Viem client → Web3CoreLayer → CollectiveSDK (no address overrides on 30/31); returns `proposals`, `staking`, `vote`.  
 - **UI**: ConnectWallet (Wagmi/RainbowKit), StakingCard (staking/withdraw RIF), ProposalList (active proposals), VoteButton (simulate then vote).
 
 ---
@@ -117,7 +118,7 @@ The layout will look like this:
 
 - Node.js 18+
 - A Reown (WalletConnect) project ID for the dApp
-- Wallet that supports Rootstock Testnet (e.g. MetaMask)
+- Wallet that supports Rootstock Mainnet and Testnet (e.g. MetaMask)
 
 ---
 
@@ -166,7 +167,7 @@ Only these two variables are used. No other keys are required for the Collective
 The Collective SDK’s write methods (`stakeRIF`, `unstakeRIF`, `castVote`, etc.) take a **WalletClient** (from viem) so the SDK can request a signature. In this starter kit we use the SDK correctly as a **browser dApp**: the WalletClient comes from the **user’s connected wallet** (Wagmi + RainbowKit). The user approves each transaction in their wallet; the app never has access to a private key. No `PRIVATE_KEY` is required in `.env`; only `VITE_WC_PROJECT_ID` for WalletConnect.
 
 **What the user needs to perform write actions (stake, unstake, vote)**  
-The **connected wallet** must hold Testnet funds: **tRBTC** for gas, and **RIF** (for staking) or **stRIF** (for voting / unstaking). The kit passes the wallet’s WalletClient into the SDK; the SDK then requests the signature from the user’s wallet.
+The **connected wallet** must hold funds on the **selected network**: native coin (**RBTC** on Mainnet, **tRBTC** on Testnet) for gas, and **RIF** (for staking) or **stRIF** (for voting / unstaking). The kit passes the wallet’s WalletClient into the SDK; the SDK then requests the signature from the user’s wallet.
 
 **Security and environment**  
 - No signing secrets: The app never has access to a private key; all writes are signed by the user’s connected wallet (Wagmi). No `PRIVATE_KEY` in env.  
@@ -175,7 +176,7 @@ The **connected wallet** must hold Testnet funds: **tRBTC** for gas, and **RIF**
 - CI runs `npm audit --audit-level=high`. See [SECURITY.MD](./SECURITY.MD) for reporting.
 
 **Contracts and dApp security**  
-- This repo has no smart contract source. It calls external Rootstock Collective DAO contracts on Testnet via `constants/contracts.ts`. Contract security is the responsibility of the Collective SDK and Rootstock.  
+- This repo has no smart contract source. It calls external Rootstock Collective DAO contracts on-chain; `constants/contracts.ts` supplies app-side addresses where configured. Contract security is the responsibility of the Collective SDK and Rootstock.  
 - Contract addresses are fixed; staking amounts are validated in the UI as a positive integer in wei (minimum 1 wei, maximum uint256 — at most 78 decimal digits). The Collective contracts or SDK may enforce additional limits; simulation before send will fail if the amount is invalid on-chain. Voting uses `proposalId` and `support` from SDK/UI only. All writes (stake, withdraw, vote) are simulated before send; errors (e.g. Insufficient VP) are handled in the UI.  
 - No unsafe HTML, `eval`, or user-controlled URLs in critical paths; wallet/signer from Wagmi only.
 
@@ -198,14 +199,14 @@ This sample dApp focuses on **participation** (stake RIF, list proposals, cast v
 | **Staking** | Yes: `approveRIF`, `stakeRIF`, `unstakeRIF`, `getStakingInfo`; UI in StakingCard; WalletClient from connected wallet | Yes: same APIs; SDK accepts WalletClient (browser or Node) |
 | **Proposals (read)** | Yes: `getProposals`; UI in ProposalList | Yes |
 | **Voting** | Yes: `castVote`; UI in VoteButton; simulate before write; Insufficient VP handling | Yes: same APIs |
-| **Contract overrides** | Yes: `constants/contracts.ts` (governor, treasury, RIF, stRIF, etc.) for Mainnet and Testnet; passed into SDK | Yes: SDK supports contract-address overrides |
+| **Contract addresses** | **SDK (30/31):** No overrides passed—**built-in** deployments. **`constants/contracts.ts`:** App-side map for reads/simulation (Testnet complete; fill Mainnet when needed). | Yes: optional `contractAddresses` for custom chains or deployments |
 | **Wallet / signer** | Yes: Wagmi + RainbowKit; user connects wallet in browser; WalletClient passed to SDK for writes. No `PRIVATE_KEY` in .env | Yes: SDK expects a WalletClient for writes (e.g. from Wagmi in browser, or from a key in Node/scripts) |
 | **Claim rewards** | No | Yes: `holdings.claimRewards` |
 | **Vault deposit/withdraw** | No | Yes: supported by SDK |
 | **Proposal creation** | No | Yes: `createProposal`, `createTreasuryTransferProposal`, etc. |
 | **Contract Registry** | No: ABIs are local (`lib/collectiveAbis.ts`, `assets/abis`) | Guide can cover Contract Registry for fetching ABIs |
 
-The starter kit has **staking, listing proposals, and voting** (read + write) with contract overrides and simulation, and passes the user’s WalletClient into the SDK for all writes. It does not implement claim rewards, vault flows, proposal creation, or Contract Registry usage; the guide can add those from the SDK reference.
+The starter kit has **staking, listing proposals, and voting** (read + write) with simulation and app-side address maps where configured; it passes the user’s WalletClient into the SDK for all writes. It does not implement claim rewards, vault flows, proposal creation, or Contract Registry usage; the guide can add those from the SDK reference.
 
 ---
 
@@ -218,7 +219,7 @@ Method names and file locations for the guide.
 Proposals are what get voted on; this starter kit does **not** implement proposal creation. The writer can still explain on-chain voting clearly by framing the guide as follows:
 
 1. **Where proposals come from**  
-   Proposals exist on-chain (Rootstock Testnet) and are created **outside** this dApp—e.g. by governance admins, a separate proposal-creation tool, or the Collective SDK/contracts used elsewhere. The guide should state this upfront: *“This tutorial focuses on **participating** in governance: staking RIF for voting power and voting on **existing** proposals. Proposal creation is documented separately (or in the SDK reference).”*
+   Proposals exist on-chain (Rootstock Mainnet or Testnet) and are created **outside** this dApp—e.g. by governance admins, a separate proposal-creation tool, or the Collective SDK/contracts used elsewhere. The guide should state this upfront: *“This tutorial focuses on **participating** in governance: staking RIF for voting power and voting on **existing** proposals. Proposal creation is documented separately (or in the SDK reference).”*
 
 2. **What this kit demonstrates**  
    The kit is the reference for the **participation** path: connect wallet → stake RIF → list proposals (`getProposals`) → cast vote (`castVote`). The writer can walk through that flow and map each step to the SDK methods and files in the tables below. Voting is explained as: *“When proposals are active, users with stRIF (voting power) can call `castVote(proposalId, support)`; the starter kit does this in VoteButton after simulating the transaction.”*
@@ -255,27 +256,27 @@ Every write is simulated first. Helpers in **`src/lib/simulation.ts`** use Viem 
 
 ### User flow to SDK
 
-1. **Connect wallet** – Wagmi + RainbowKit; `useCollective()` returns `sdk`, `walletClient`, `address` when chain is Rootstock Testnet (31).
+1. **Connect wallet** – Wagmi + RainbowKit; `useCollective()` returns `sdk`, `walletClient`, `address` when the chain is Rootstock Mainnet (30) or Testnet (31).
 2. **Stake RIF** – StakingCard: `getStakingInfo` then, if needed, `approveRIF` (after simulate), then `stakeRIF` (after simulate). Amount is wei (integer); validated in UI.
 3. **List proposals** – ProposalList: `getProposals({ limit: 20 })`; each proposal has `proposalId`, `state`, `stateLabel`, `deadline`, `forVotes`, `againstVotes`, `abstainVotes`.
 4. **Vote** – VoteButton: `simulateCastVote` then `castVote(walletClient, proposalId, support)`; errors (e.g. Insufficient VP) handled via `src/lib/errors.ts`.
 
-### Contract overrides and types
+### Contract addresses and types
 
-- **Addresses:** **`src/constants/contracts.ts`** exports `COLLECTIVE_CONTRACT_ADDRESSES` keyed by chain ID `31`, with: `governor`, `treasury`, `backersManager`, `builderRegistry`, `RIF`, `stRIF`, `USDRIF`. Passed to `createCollective({ chainId: 31, rpcUrl, contractAddresses })` when using the SDK.
-- **SDK interface and types:** **`src/lib/collectiveStub.ts`** defines the `CollectiveSDK` interface (proposals/staking methods), `ProposalSummary`, `ProposalsListResult`, `StakingInfo`, `TokenAmount`, and `VoteSupport` (enum 0/1/2). These match the Collective SDK surface the guide should document.
+- **Addresses:** **`src/constants/contracts.ts`** exports `COLLECTIVE_CONTRACT_ADDRESSES` for chain IDs **30** and **31** (`governor`, `treasury`, `backersManager`, `builderRegistry`, `RIF`, `stRIF`, `USDRIF`). **`useCollective`** initializes the SDK **without** `contractAddresses` on 30/31 so the SDK uses **built-in** deployments; this file feeds **`getAppContractAddresses`** for app-side reads and simulation where the map is complete (no placeholders).
+- **SDK interface and types:** **`src/lib/collectiveStub.ts`** defines the `CollectiveSDK` interface (proposals/staking methods), `ProposalSummary`, `ProposalsListResult`, `StakingInfo`, `TokenAmount`, and `VoteSupport` (enum 0/1/2), aligned with `@rsksmart/collective-sdk` for typing across components.
 
 ---
 
 ## Collective SDK
 
-This kit depends on **`@rsksmart/collective-sdk`** for proposals, staking, and voting on Rootstock Testnet. Install with `npm install`.
+This kit depends on **`@rsksmart/collective-sdk`** for proposals, staking, and voting on **Rootstock Mainnet and Testnet**. Install with `npm install`.
 
 ---
 
 ## References
 
-- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). Contract overrides, CollectiveSDK, proposals/staking/vote APIs.  
+- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). CollectiveSDK, optional address overrides, proposals/staking/vote APIs.  
 - **Base kit**: [rsksmart/rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit). Wagmi, RainbowKit, Rootstock chains.  
 - **Rootstock**: [Rootstock](https://rootstock.io/) · [Developers Portal](https://dev.rootstock.io/).
 

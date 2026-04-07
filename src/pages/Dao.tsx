@@ -3,16 +3,37 @@
  * Rootstock Editor Mode: background #000000, text #FAF9F5, active #FF9100.
  */
 
+import { useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import { useCollective } from "@/hooks/useCollective";
-import { isRootstockChain } from "@/lib/utils/RootstockChains";
+import { getChainDisplayName, isRootstockChain } from "@/lib/utils/RootstockChains";
 import ConnectWallet from "@/components/dao/ConnectWallet";
 import StakingCard from "@/components/dao/StakingCard";
 import ProposalList from "@/components/dao/ProposalList";
+import { useToast } from "@/components/ui/use-toast";
 
 export function Dao(): JSX.Element {
   const { address, chain } = useAccount();
   const collective = useCollective();
+  const { toast } = useToast();
+  const prevRootstockChainRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!address) {
+      prevRootstockChainRef.current = undefined;
+      return;
+    }
+    const id = chain?.id;
+    if (id === undefined || !isRootstockChain(id)) return;
+    const prev = prevRootstockChainRef.current;
+    if (prev !== undefined && prev !== id) {
+      toast({
+        title: `Switched to ${getChainDisplayName(id)}`,
+        description: "Proposals and balances now load for this network.",
+      });
+    }
+    prevRootstockChainRef.current = id;
+  }, [address, chain?.id, toast]);
 
   const isCorrectChain = chain?.id !== undefined && isRootstockChain(chain.id);
   const notConnected = !address;
@@ -51,6 +72,7 @@ export function Dao(): JSX.Element {
         <>
           <section className="mb-10 max-w-md">
             <StakingCard
+              key={`staking-${collective.chainId}`}
               sdk={collective.sdk}
               walletClient={collective.walletClient}
               address={collective.address}
@@ -63,6 +85,7 @@ export function Dao(): JSX.Element {
               Active proposals
             </h2>
             <ProposalList
+              key={`proposals-${collective.chainId}`}
               sdk={collective.sdk}
               walletClient={collective.walletClient}
               address={collective.address}

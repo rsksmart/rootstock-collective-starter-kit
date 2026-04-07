@@ -16,7 +16,7 @@ import { getCollectiveErrorTitle, getCollectiveErrorDescription } from "@/lib/er
 import { simulateCastVote } from "@/lib/simulation";
 import { formatVoteOrAmount } from "@/lib/formatDisplay";
 import { getExplorerTxUrl } from "@/lib/utils/RootstockChains";
-import { COLLECTIVE_CONTRACT_ADDRESSES } from "@/constants/contracts";
+import { getAppContractAddresses } from "@/constants/contracts";
 import type { RootstockChainId } from "@/lib/utils/RootstockChains";
 
 const SUPPORT_OPTIONS: { value: VoteSupport; label: string }[] = [
@@ -44,7 +44,7 @@ export default function VoteButton({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const publicClient = usePublicClient({ chainId });
-  const addresses = COLLECTIVE_CONTRACT_ADDRESSES[chainId];
+  const addresses = getAppContractAddresses(chainId);
 
   const { data: stRifBalance } = useBalance({
     address,
@@ -60,13 +60,15 @@ export default function VoteButton({
       toast({ title: "Connect your wallet to vote.", variant: "destructive" });
       return;
     }
-    if (!publicClient || !addresses) {
+    if (!publicClient) {
       toast({ title: "Network not ready.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      await simulateCastVote(publicClient, address, addresses, proposalId, support);
+      if (addresses) {
+        await simulateCastVote(publicClient, address, addresses, proposalId, support);
+      }
       const result = await sdk.proposals.castVote(
         walletClient,
         proposalId,
