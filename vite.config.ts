@@ -7,12 +7,12 @@ import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfil
 const require = createRequire(import.meta.url);
 const collectiveSdkInstalled = (() => {
   try {
-    require.resolve("@rsksmart/collective-sdk");
+    require.resolve("@rootstockcollective/collective-sdk");
     return true;
   } catch (e) {
     const err = e as NodeJS.ErrnoException;
     const code = err?.code ?? "UNKNOWN";
-    console.warn(`[Vite] @rsksmart/collective-sdk not found (${code}). Using stub. Run npm install; if from GitHub Packages, set GITHUB_TOKEN with read:packages then npm install.`);
+    console.warn(`[Vite] @rootstockcollective/collective-sdk not found (${code}). Using stub. Run npm install.`);
     return false;
   }
 })();
@@ -23,7 +23,7 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 800,
     rollupOptions: {
-      external: collectiveSdkInstalled ? [] : ["@rsksmart/collective-sdk"],
+      external: collectiveSdkInstalled ? [] : ["@rootstockcollective/collective-sdk"],
     },
   },
   resolve: {
@@ -31,7 +31,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       ...(collectiveSdkInstalled
         ? {}
-        : { "@rsksmart/collective-sdk": path.resolve(__dirname, "src/lib/collectiveSdkPlaceholder.ts") }),
+        : { "@rootstockcollective/collective-sdk": path.resolve(__dirname, "src/lib/collectiveSdkPlaceholder.ts") }),
     },
   },
   optimizeDeps: {
