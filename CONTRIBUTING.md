@@ -31,13 +31,13 @@ npm run dev
 
 - **Lint**: Run `npm run lint` before committing. The project uses ESLint with TypeScript and React Hooks.
 - **Types**: Keep strict TypeScript; avoid `any` in app code.
-- **Scope**: The starter targets **Rootstock Mainnet (30) and Testnet (31)** and Collective DAO flows (connect → stake → proposals → vote) using **`@rsksmart/collective-sdk`** (Vite aliases to a placeholder only if the package is missing at install time).
+- **Scope**: The starter targets **Rootstock Mainnet (30) and Testnet (31)** and Collective DAO flows (connect → stake → proposals → vote) using **`@rootstockcollective/collective-sdk`** (Vite aliases to a placeholder only if the package is missing at install time).
 - **Branches**: Prefer a feature branch and a short PR; describe what changed and why.
 
 ## Project layout
 
 - **`src/constants/contracts.ts`**: App-side Collective addresses (Mainnet and Testnet) for reads/simulation.
-- **`src/hooks/useCollective.ts`**: Collective SDK hook (`@rsksmart/collective-sdk`); built-in deployments on 30/31.
+- **`src/hooks/useCollective.ts`**: Collective SDK hook (`@rootstockcollective/collective-sdk`); built-in deployments on 30/31.
 - **`src/components/dao/`**: ConnectWallet, StakingCard, ProposalList, VoteButton.
 - **`src/lib/`**: Types (`collectiveStub`), errors, simulation, ABIs; `collectiveSdkPlaceholder` when the SDK package is not installed.
 
