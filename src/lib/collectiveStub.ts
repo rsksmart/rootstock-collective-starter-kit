@@ -1,5 +1,5 @@
 /**
- * Stub when @rsksmart/collective-sdk is not installed. Read calls return sample data; write calls throw.
+ * Stub when @rootstockcollective/collective-sdk is not installed. Read calls return sample data; write calls throw.
  */
 
 import type { WalletClient } from "viem";

@@ -1,9 +1,9 @@
 # Rootstock Collective DAO Starter Kit
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rsksmart/rsk-wagmi-starter-kit/badge)](https://scorecard.dev/viewer/?uri=github.com/rsksmart/rsk-wagmi-starter-kit)
-[![CodeQL](https://github.com/rsksmart/rsk-wagmi-starter-kit/workflows/CodeQL/badge.svg)](https://github.com/rsksmart/rsk-wagmi-starter-kit/actions?query=workflow%3ACodeQL)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/rsksmart/rootstock-collective-starter-kit/badge)](https://scorecard.dev/viewer/?uri=github.com/rsksmart/rootstock-collective-starter-kit)
+[![CodeQL](https://github.com/rsksmart/rootstock-collective-starter-kit/workflows/CodeQL/badge.svg)](https://github.com/rsksmart/rootstock-collective-starter-kit/actions?query=workflow%3ACodeQL)
 
-A sample dApp built on the [Rootstock Collective SDK](https://github.com/rsksmart/collective-sdk). It shows staking RIF for voting power, listing active proposals, and casting votes on Rootstock. This repo is the reference for the developers-portal guide [Implementing On-Chain Voting with Collective SDK](https://dev.rootstock.io/).
+A sample dApp built on the [RootstockCollective SDK](https://github.com/RootstockCollective/collective-sdk). It shows staking RIF for voting power, listing active proposals, and casting votes on Rootstock. This repo is the reference for the developers-portal guide [Implementing On-Chain Voting with Collective SDK](https://dev.rootstock.io/use-cases/integrate-rif-economy/build-dao-voting-collective-sdk/).
 
 **Networks:** Rootstock Mainnet (Chain ID: 30) and Testnet (Chain ID: 31). The app uses the connected wallet’s chain; proposals and staking work on either network.
 
@@ -64,7 +64,7 @@ The Rootstock Collective SDK has three layers.
 
 3. **Module (Collective)**  
    - **Role:** Domain APIs for the Collective DAO (proposals, staking, voting).  
-   - **In this kit**: **CollectiveSDK** from `@rsksmart/collective-sdk`, constructed with the core layer. On chains **30** and **31** the hook does **not** pass `contractAddresses` into the SDK constructor so deployments come from the SDK’s **built-in** maps. `constants/contracts.ts` is still used for **app-side** reads and simulation (and optional future overrides); if `@rsksmart/collective-sdk` is missing at install time, Vite aliases the package to `collectiveSdkPlaceholder.ts` until you run `npm install`. The app uses the **proposals**, **staking**, and **vote** suites from `useCollective`.
+   - **In this kit**: **CollectiveSDK** from `@rootstockcollective/collective-sdk`, constructed with the core layer. On chains **30** and **31** the hook does **not** pass `contractAddresses` into the SDK constructor so deployments come from the SDK’s **built-in** maps. `constants/contracts.ts` is still used for **app-side** reads and simulation (and optional future overrides); if `@rootstockcollective/collective-sdk` is missing at install time, Vite aliases the package to `collectiveSdkPlaceholder.ts` until you run `npm install`. The app uses the **proposals**, **staking**, and **vote** suites from `useCollective`.
 
 **Data flow (conceptual)**  
 Wallet (RainbowKit) → Wagmi → Viem client → Web3CoreLayer → CollectiveSDK → `proposals` / `staking` / `vote` → React UI.
@@ -100,7 +100,7 @@ The layout will look like this:
 │   │   └── ui/                   # Shadcn etc.
 │   ├── lib
 │   │   ├── collectiveStub.ts    # Types aligned with CollectiveSDK (used across UI)
-│   │   ├── collectiveSdkPlaceholder.ts  # Vite alias if @rsksmart/collective-sdk not installed
+│   │   ├── collectiveSdkPlaceholder.ts  # Vite alias if @rootstockcollective/collective-sdk not installed
 │   │   └── utils
 │   │       └── RootstockChains.ts   # Mainnet (30) and Testnet (31); RPC and chain config
 │   └── pages
@@ -192,7 +192,7 @@ Open the app and connect a wallet on **Rootstock Mainnet (Chain ID: 30) or Testn
 
 ## Implemented in this kit
 
-This sample dApp focuses on **participation** (stake RIF, list proposals, cast vote) and uses the Collective SDK as intended for a browser dApp. The table below shows what this kit implements versus what the [Collective SDK](https://github.com/rsksmart/collective-sdk) supports.
+This sample dApp focuses on **participation** (stake RIF, list proposals, cast vote) and uses the Collective SDK as intended for a browser dApp. The table below shows what this kit implements versus what the [Collective SDK](https://github.com/RootstockCollective/collective-sdk) supports.
 
 | Capability | Starter kit (this repo) | Collective SDK |
 |------------|-------------------------|----------------|
@@ -264,19 +264,19 @@ Every write is simulated first. Helpers in **`src/lib/simulation.ts`** use Viem 
 ### Contract addresses and types
 
 - **Addresses:** **`src/constants/contracts.ts`** exports `COLLECTIVE_CONTRACT_ADDRESSES` for chain IDs **30** and **31** (`governor`, `treasury`, `backersManager`, `builderRegistry`, `RIF`, `stRIF`, `USDRIF`). **`useCollective`** initializes the SDK **without** `contractAddresses` on 30/31 so the SDK uses **built-in** deployments; this file feeds **`getAppContractAddresses`** for app-side reads and simulation where the map is complete (no placeholders).
-- **SDK interface and types:** **`src/lib/collectiveStub.ts`** defines the `CollectiveSDK` interface (proposals/staking methods), `ProposalSummary`, `ProposalsListResult`, `StakingInfo`, `TokenAmount`, and `VoteSupport` (enum 0/1/2), aligned with `@rsksmart/collective-sdk` for typing across components.
+- **SDK interface and types:** **`src/lib/collectiveStub.ts`** defines the `CollectiveSDK` interface (proposals/staking methods), `ProposalSummary`, `ProposalsListResult`, `StakingInfo`, `TokenAmount`, and `VoteSupport` (enum 0/1/2), aligned with `@rootstockcollective/collective-sdk` for typing across components.
 
 ---
 
 ## Collective SDK
 
-This kit depends on **`@rsksmart/collective-sdk`** for proposals, staking, and voting on **Rootstock Mainnet and Testnet**. Install with `npm install`.
+This kit depends on **`@rootstockcollective/collective-sdk`** for proposals, staking, and voting on **Rootstock Mainnet and Testnet**. Install with `npm install`.
 
 ---
 
 ## References
 
-- **Collective SDK (source):** [rsksmart/collective-sdk](https://github.com/rsksmart/collective-sdk). CollectiveSDK, optional address overrides, proposals/staking/vote APIs.  
+- **Collective SDK (source):** [RootstockCollective/collective-sdk](https://github.com/RootstockCollective/collective-sdk). CollectiveSDK, optional address overrides, proposals/staking/vote APIs.  
 - **Base kit**: [rsksmart/rsk-wagmi-starter-kit](https://github.com/rsksmart/rsk-wagmi-starter-kit). Wagmi, RainbowKit, Rootstock chains.  
 - **Rootstock**: [Rootstock](https://rootstock.io/) · [Developers Portal](https://dev.rootstock.io/).
 

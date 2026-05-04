@@ -1,8 +1,8 @@
-/** Types for @rsksmart/collective-sdk when package is not installed. Build uses stub. */
+/** Types for @rootstockcollective/collective-sdk when package is not installed. Build uses stub. */
 import type { WalletClient } from "viem";
 import type { Address } from "viem";
 
-declare module "@rsksmart/collective-sdk" {
+declare module "@rootstockcollective/collective-sdk" {
   export interface ProposalSummary {
     proposalId: string;
     index: number;

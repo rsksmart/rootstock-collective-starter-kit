@@ -113,7 +113,7 @@ export function useCollective(): UseCollectiveResult {
   }, []);
 
   useEffect(() => {
-    import("@rsksmart/collective-sdk")
+    import("@rootstockcollective/collective-sdk")
       .then((m) => {
         const Ctor = m.CollectiveSDK;
         setRealSDK(Ctor ? (() => Ctor as unknown as RealSDKConstructor) : null);
