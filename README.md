@@ -127,8 +127,8 @@ The layout will look like this:
 ### 1. Clone and install
 
 ```shell
-git clone https://github.com/rsksmart/collective-starter-kit.git
-cd collective-starter-kit
+git clone https://github.com/rsksmart/rootstock-collective-starter-kit.git
+cd rootstock-collective-starter-kit
 npm install
 ```
 
